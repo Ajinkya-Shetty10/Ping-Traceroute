@@ -6,6 +6,12 @@ import select
 import sys
 
 def checksum(data):
+    """Calculate the checksum for ICMP packet data.
+
+    :param bytes data: The data to calculate checksum for
+    :return: The calculated 16-bit checksum
+    :rtype: int
+    """
     if len(data) % 2:
         data += b'\x00'
     s = sum(struct.unpack('!%dH' % (len(data) // 2), data))
@@ -14,6 +20,14 @@ def checksum(data):
     return ~s & 0xffff
 
 def create_icmp_packet(id, seq, payload_size=56):
+    """Create an ICMP echo request packet.
+
+    :param int id: Packet identifier
+    :param int seq: Sequence number
+    :param int payload_size: Size of payload in bytes (default: 56)
+    :return: Complete ICMP packet with header and payload
+    :rtype: bytes
+    """
     header = struct.pack('!BBHHH', 8, 0, 0, id, seq)  # Type, Code, Checksum, ID, Sequence
     payload = b'a' * payload_size  # Payload
     chksum = checksum(header + payload)
@@ -21,6 +35,16 @@ def create_icmp_packet(id, seq, payload_size=56):
     return header + payload
 
 def ping(dest_addr, count, interval, timeout, packet_size):
+    """Perform ICMP ping to a destination address.
+
+    :param str dest_addr: Destination hostname or IP address
+    :param int count: Number of packets to send (None for infinite)
+    :param float interval: Time between packets in seconds
+    :param float timeout: Timeout for each packet in seconds
+    :param int packet_size: Size of packet payload in bytes
+    :return: None (Prints ping statistics to console)
+    :rtype: None
+    """
     try:
         dest_ip = socket.gethostbyname(dest_addr)
     except socket.gaierror:
@@ -64,6 +88,7 @@ def ping(dest_addr, count, interval, timeout, packet_size):
     print(f"{sent} packets transmitted, {received} received, {((sent - received) / sent) * 100:.2f}% packet loss")
 
 if __name__ == "__main__":
+    """Command-line interface for the ping utility."""
     parser = argparse.ArgumentParser(description="Custom Ping Implementation")
     parser.add_argument("-c", "--count", type=int, default=None, help="Number of packets to send")
     parser.add_argument("-i", "--interval", type=float, default=1, help="Interval between packets")
